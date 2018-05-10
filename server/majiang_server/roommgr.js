@@ -18,7 +18,7 @@ function generateRoomId(){
 	}
 	return roomId;
 }
-
+/**从数据库读取roomInfo */
 function constructRoomFromDb(dbdata){
 	var roomInfo = {
 		uuid:dbdata.uuid,
@@ -39,6 +39,7 @@ function constructRoomFromDb(dbdata){
 	}
 	var roomId = roomInfo.id;
 
+	//新建四个玩家，初始化胡牌信息，比如自摸，JiePao、暗杠、明杠、chaJiao？
 	for(var i = 0; i < 4; ++i){
 		var s = roomInfo.seats[i] = {};
 		s.userId = dbdata["user_id" + i];
@@ -52,7 +53,7 @@ function constructRoomFromDb(dbdata){
 		s.numAnGang = 0;
 		s.numMingGang = 0;
 		s.numChaJiao = 0;
-
+//记录下玩家在哪个房间及位置号
 		if(s.userId > 0){
 			userLocation[s.userId] = {
 				roomId:roomId,
@@ -106,7 +107,7 @@ exports.createRoom = function(creator,roomConf,gems,ip,port,callback){
 		callback(2222,null);
 		return;
 	}
-
+/**创建新房间 */
 	var fnCreate = function(){
 		var roomId = generateRoomId();
 		if(rooms[roomId] != null || creatingRooms[roomId] != null){
@@ -151,7 +152,7 @@ exports.createRoom = function(creator,roomConf,gems,ip,port,callback){
 						roomInfo.gameMgr = require("./gamemgr_xzdd");
 					}
 					console.log(roomInfo.conf);
-					
+					//新建4玩家
 					for(var i = 0; i < 4; ++i){
 						roomInfo.seats.push({
 							userId:0,
@@ -171,6 +172,7 @@ exports.createRoom = function(creator,roomConf,gems,ip,port,callback){
 
 					//写入数据库
 					var conf = roomInfo.conf;
+					//新创建的房间保存到数据库中
 					db.create_room(roomInfo.id,roomInfo.conf,ip,port,createTime,function(uuid){
 						delete creatingRooms[roomId];
 						if(uuid != null){
